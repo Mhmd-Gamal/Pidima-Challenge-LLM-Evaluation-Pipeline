@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  llm-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pidima-llm-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_NAME=microsoft/Phi-3-mini-4k-instruct
+      - MODEL_CACHE_DIR=/app/models
+      - DEVICE=cpu
+      - MAX_LENGTH=512
+      - LOG_LEVEL=INFO
+    volumes:
+      - model-cache:/app/models
+      - ./results:/app/results
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    mem_limit: 8g
+    cpus: 4
+
+volumes:
+  model-cache:
+    driver: local
